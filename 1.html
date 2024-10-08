@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Replica Video Player</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet"> <!-- Importing Roboto font -->
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background-color: #1f1f1f; /* Dark background */
+        }
+        .video-container {
+            position: relative;
+            width: 54%; /* Width of the video player reduced by 10% */
+            height: 63%; /* Height of the video player reduced by 10% */
+            max-width: 1080px; /* Max width for larger screens */
+            margin: auto; /* Center horizontally */
+            margin-top: 6%; /* Center vertically with margin */
+            border-radius: 15px; /* Rounded corners */
+            background-color: black; /* Player background */
+            overflow: hidden; /* Hide overflow */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none; /* Hide initially */
+        }
+        .play-button {
+            position: absolute;
+            width: 96px; /* Size of the play button increased by 20% */
+            height: 96px; /* Size of the play button increased by 20% */
+            background-image: url('youtube-play-button.png'); /* Path to your play button image */
+            background-size: cover;
+            cursor: pointer;
+            z-index: 1;
+            top: 50%; /* Center vertically */
+            left: 50%; /* Center horizontally */
+            transform: translate(-50%, -50%); /* Adjust for perfect centering */
+        }
+        .youtube-logo {
+            position: absolute;
+            width: 120px; /* Size of the YouTube logo */
+            height: auto; /* Maintain aspect ratio */
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/42/YouTube_icon_%282013-2017%29.png'); /* YouTube logo URL */
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 1;
+            top: 10px; /* Position the logo */
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%); /* Adjust for centering */
+        }
+        .video-title {
+            position: absolute;
+            top: 10px; /* Position the title */
+            left: 10px; /* Position the title */
+            color: white; /* Title color */
+            font-size: 16px; /* Font size similar to YouTube's title */
+            font-weight: 500; /* Medium weight */
+            font-family: 'Roboto', sans-serif; /* Use Roboto font */
+            z-index: 1; /* Ensure title is on top */
+            max-width: calc(100% - 20px); /* Prevent overflow */
+            overflow: hidden; /* Hide overflow */
+            white-space: nowrap; /* Prevent line break */
+            text-overflow: ellipsis; /* Show ellipsis for overflow text */
+        }
+        .video-title-link {
+            text-decoration: none; /* No underline */
+            color: white; /* Title color */
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container" id="videoContainer">
+        <div class="video-title" id="videoTitle">
+            <a class="video-title-link" id="titleLink" target="_blank" data-sessionlink="feature=player-title" tabindex="-1"></a>
+        </div> <!-- Video title element -->
+        <video id="myVideo" loop>
+            <source src="video1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <div class="play-button" id="playButton"></div>
+        <div class="youtube-logo"></div> <!-- Center the logo at the top -->
+    </div>
+
+    <script>
+        const video = document.getElementById('myVideo');
+        const playButton = document.getElementById('playButton');
+        const videoContainer = document.getElementById('videoContainer');
+        const videoTitle = document.getElementById('videoTitle');
+        const titleLink = document.getElementById('titleLink');
+
+        const titles = [
+            "Toaster Gets Mad, Launches Bread at My Face in Slow Motion",
+            "Man Paints House with Yogurt, Accidentally Attracts a Swarm of Bees",
+            "Man Slaps Dog with Dead Gull, Gets Naked in Front of Everybody and Flees into Lake.",
+            "Horse Kicks Tree, Farts on Dogs Then Runs Away."
+        ];
+
+        // Function to get a random video title
+        function getRandomTitle() {
+            const randomIndex = Math.floor(Math.random() * titles.length);
+            return titles[randomIndex];
+        }
+
+        // Set a random title and link
+        titleLink.textContent = getRandomTitle(); // Set the video title
+        titleLink.href = "#"; // You can modify this to a real link if needed
+
+        let isPlaying = false; // Flag to track if video is already playing
+
+        // Function to handle play button click
+        function playVideo(event) {
+            event.stopPropagation(); // Prevent event bubbling
+            if (!isPlaying) { // Only play if not already playing
+                video.style.display = 'block'; // Show video
+                video.currentTime = event.offsetX / videoContainer.offsetWidth * video.duration; // Start video at click position
+                video.play(); // Play the video
+                videoContainer.requestFullscreen(); // Enter fullscreen mode
+                video.volume = 1; // Set volume to maximum
+                playButton.style.display = 'none'; // Hide the play button
+                videoTitle.style.display = 'none'; // Hide the title after starting
+                isPlaying = true; // Set flag to true to indicate the video is playing
+            }
+        }
+
+        // Event listener for the play button
+        playButton.addEventListener('click', playVideo);
+
+        // Event listener for clicking anywhere on the video container
+        videoContainer.addEventListener('click', playVideo);
+
+        // Loop the video
+        video.addEventListener('ended', () => {
+            video.currentTime = 0; // Reset to the beginning
+            video.play(); // Replay the video
+        });
+
+        // Event listener for exiting fullscreen
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                // When exiting fullscreen, play the video on the whole screen
+                video.style.position = 'fixed'; // Make the video fixed position
+                video.style.top = '0'; // Align to the top
+                video.style.left = '0'; // Align to the left
+                video.style.width = '100vw'; // Full width
+                video.style.height = '100vh'; // Full height
+            } else {
+                // When entering fullscreen, reset the video styles
+                video.style.position = 'relative'; // Reset position
+                video.style.width = '100%'; // Reset width
+                video.style.height = '100%'; // Reset height
+            }
+        });
+
+        // Prevent leaving the website
+        window.onbeforeunload = function() {
+            return "Are you sure you want to leave?"; // Prompt message when trying to leave
+        };
+    </script>
+</body>
+</html>
